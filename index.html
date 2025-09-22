@@ -35,7 +35,7 @@
     li { 
       margin: 15px 0; 
       text-align: center;
-      position: relative; /* untuk posisi notifikasi */
+      position: relative; 
     }
     a.file-link { 
       text-decoration: none; 
@@ -58,7 +58,6 @@
     .copied {
       background-color: #4CAF50 !important;
     }
-    /* notifikasi muncul di atas tombol */
     .copy-notice {
       position: absolute;
       top: -25px;
@@ -92,11 +91,14 @@
     const repo = "sumpiuhcom.github.io";
     const path = ""; 
     const domain = "https://img.sumpiuh.com";
+    const token = "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"; // token pribadi
 
     async function fetchFiles() {
       try {
         const commitsUrl = `https://api.github.com/repos/${username}/${repo}/commits?path=${path}&per_page=10`;
-        const response = await fetch(commitsUrl);
+        const response = await fetch(commitsUrl, {
+          headers: { 'Authorization': `token ${token}` }
+        });
 
         if (!response.ok) throw new Error(`Gagal mengambil data: ${response.status}`);
 
@@ -105,8 +107,9 @@
         const fileList = [];
 
         for (let commit of commits) {
-          const commitUrl = commit.url;
-          const commitDetailResp = await fetch(commitUrl);
+          const commitDetailResp = await fetch(commit.url, {
+            headers: { 'Authorization': `token ${token}` }
+          });
           const commitDetail = await commitDetailResp.json();
           commitDetail.files.forEach(f => {
             if (!fileSet.has(f.filename)) {
@@ -135,7 +138,6 @@
           a.addEventListener("click", function(e) {
             e.preventDefault();
             navigator.clipboard.writeText(`${domain}/${fileName}`).then(() => {
-              // tampilkan notifikasi
               notice.classList.add("show");
               setTimeout(() => notice.classList.remove("show"), 1200);
             });
