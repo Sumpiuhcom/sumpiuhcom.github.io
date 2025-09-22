@@ -2,7 +2,7 @@
 
 Selamat datang di **Img.Sumpiuh.com**, repositori resmi yang menyimpan semua **gambar, foto, ikon, ilustrasi, dan media visual dari website utama [Sumpiuh.com](https://sumpiuh.com)**.  
 
-Repositori ini adalah **pusat penyimpanan media digital Sumpiuh, Banyumas, Jawa Tengah, Indonesia**, dirancang agar **mudah diakses, diindeks oleh mesin pencari, dan dipahami oleh sistem AI modern**.
+Repositori ini adalah **pusat penyimpanan media digital Sumpiuh.com**, dirancang agar **mudah diakses, diindeks oleh mesin pencari, dan dipahami oleh sistem AI modern**.
 
 ---
 
@@ -10,7 +10,7 @@ Repositori ini adalah **pusat penyimpanan media digital Sumpiuh, Banyumas, Jawa 
 
 **Img.Sumpiuh.com** adalah subdomain resmi dari **Sumpiuh.com**, khusus untuk media visual. Semua konten di repositori ini digunakan untuk:
 
-- Galeri foto dan dokumentasi kegiatan Sumpiuh  
+- Galeri foto dan dokumentasi Sumpiuh.com  
 - Banner promosi dan elemen grafis website  
 - Referensi media digital untuk artikel, blog, dan publikasi  
 - Mendukung SEO dan indeksasi AI untuk meningkatkan visibilitas online
