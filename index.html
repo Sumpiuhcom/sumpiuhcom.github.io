@@ -82,12 +82,12 @@ const username = "sumpiuhcom";
 const repo = "sumpiuhcom.github.io";
 const path = "";                 // kosong = root
 const domain = "https://img.sumpiuh.com";
-const token = "GITHUB_PERSONAL_ACCESS_TOKEN"; // <-- Ganti dengan tokenmu DI FILE LOKAL (jangan share)
+const token = "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"; // <-- Ganti dengan tokenmu DI FILE LOKAL (jangan share)
 
 // util: panggil GitHub API dengan header bila token tersedia
 async function apiFetch(url) {
   const headers = { 'Accept': 'application/vnd.github+json' };
-  if (token && token !== "GITHUB_PERSONAL_ACCESS_TOKEN") {
+  if (token && token !== "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") {
     headers['Authorization'] = `token ${token}`;
   }
   return fetch(url, { headers });
