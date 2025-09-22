@@ -18,5 +18,3 @@ Repositori ini adalah **pusat penyimpanan media digital Sumpiuh.com**, dirancang
 Repositori ini cocok bagi **pengembang web, tim konten digital, fotografer lokal, peneliti, dan masyarakat umum yang mencari media visual Sumpiuh**.
 
 ---
-
-## Struktur Repositori
