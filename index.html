@@ -1,141 +1,237 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <title>Daftar File Repo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
-    body { 
-      font-family: Arial, sans-serif; 
-      padding: 20px; 
-      max-width: 600px;  
+    body {
+      font-family: Arial, sans-serif;
+      padding: 18px;
+      max-width: 640px;
       margin: auto;
-      line-height: 1.6;
-      background-color: #f9f9f9;
+      background: #fafafa;
+      color: #222;
     }
-    .top-link {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .top-link a {
-      text-decoration: none;
-      color: #ff6600;
-      font-size: 1.1em;
-    }
-    h1 {
-      font-size: 1.8em;
-      text-align: center;
-      margin-bottom: 30px;
-      color: #333;
-    }
-    ul { 
-      list-style: none; 
-      padding: 0; 
-    }
-    li { 
-      margin: 15px 0; 
-      text-align: center;
-      position: relative; 
-    }
-    a.file-link { 
-      text-decoration: none; 
-      color: #fff; 
-      background-color: #ff6600; 
-      font-size: 1.2em;
-      display: inline-block;
-      width: 90%;
-      max-width: 500px;
-      padding: 15px 0; 
-      font-weight: bold;
-      border-radius: 8px;
-      transition: background-color 0.2s, transform 0.1s;
+    .top-link { text-align:center; margin-bottom:14px; }
+    .top-link a { color: #ff6600; text-decoration:none; font-weight:600; font-size:1.05em; }
+    h1 { text-align:center; margin: 6px 0 22px; font-size:1.6em; color:#333; }
+    #status { text-align:center; margin-bottom:12px; font-size:0.95em; color:#666; }
+
+    ul { list-style:none; padding:0; margin:0; }
+    li { margin:14px 0; text-align:center; position:relative; }
+
+    button.file-btn {
+      width: 92%;
+      max-width:520px;
+      padding:14px 16px;
+      font-size:1.05rem;
+      font-weight:700;
+      color:#fff;
+      background:#ff6600;
+      border:0;
+      border-radius:10px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      cursor:pointer;
+      transition: transform .08s ease, background .14s ease, box-shadow .14s ease;
       user-select: none;
     }
-    a.file-link:active {
-      background-color: #e65c00;
-      transform: scale(0.98);
-    }
+    button.file-btn:active { transform: scale(0.99); background:#e65c00; }
+    button.file-btn.copied { background:#28a745 !important; box-shadow: 0 8px 20px rgba(40,167,69,0.12); }
+
     .copy-notice {
-      position: absolute;
-      top: -25px;
+      position:absolute;
+      top: -28px;
       left: 50%;
       transform: translateX(-50%);
-      background-color: #333;
-      color: #fff;
-      padding: 3px 10px;
-      border-radius: 5px;
-      font-size: 0.9em;
-      opacity: 0;
-      transition: opacity 0.3s;
-      pointer-events: none;
+      background:#333;
+      color:#fff;
+      padding:5px 10px;
+      border-radius:6px;
+      font-size:0.86rem;
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .18s;
     }
-    .copy-notice.show {
-      opacity: 1;
-    }
+    .copy-notice.show { opacity:1; }
+
+    .small { font-size:0.9rem; color:#666; margin-top:10px; text-align:center; }
   </style>
 </head>
 <body>
 
   <div class="top-link">
-    <a href="https://sumpiuh.com" target="_blank">sumpiuh.com</a>
+    <a href="https://sumpiuh.com" target="_blank" rel="noopener">sumpiuh.com</a>
   </div>
 
   <h1>Daftar File Repo</h1>
+  <div id="status">Memuat...</div>
+
   <ul id="file-list"></ul>
 
-  <script>
-    const username = "sumpiuhcom";
-    const repo = "sumpiuhcom.github.io";
-    const path = ""; 
-    const domain = "https://img.sumpiuh.com";
-    const token = "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"; // token pribadi
+  <div class="small">Klik tombol untuk menyalin URL file ke clipboard.</div>
 
-    async function fetchFiles() {
-      try {
-        const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${path}?per_page=100`;
-        const response = await fetch(apiUrl, {
-          headers: { 'Authorization': `token ${token}` }
-        });
+<script>
+/*
+  CONFIG:
+  - Ganti token dengan token PAT-mu (atau kosongkan untuk tanpa token).
+  - Jika repo menggunakan branch selain default, biasanya /contents bekerja tetap pada default branch.
+*/
+const username = "sumpiuhcom";
+const repo = "sumpiuhcom.github.io";
+const path = "";                 // kosong = root
+const domain = "https://img.sumpiuh.com";
+const token = "GITHUB_PERSONAL_ACCESS_TOKEN"; // <-- Ganti dengan tokenmu DI FILE LOKAL (jangan share)
 
-        if (!response.ok) throw new Error(`Gagal mengambil data: ${response.status}`);
+// util: panggil GitHub API dengan header bila token tersedia
+async function apiFetch(url) {
+  const headers = { 'Accept': 'application/vnd.github+json' };
+  if (token && token !== "GITHUB_PERSONAL_ACCESS_TOKEN") {
+    headers['Authorization'] = `token ${token}`;
+  }
+  return fetch(url, { headers });
+}
 
-        const data = await response.json();
-        // urutkan berdasarkan tanggal terbaru dulu
-        data.sort((a,b) => new Date(b.git_url) - new Date(a.git_url));
+function setStatus(text, isError=false) {
+  const s = document.getElementById('status');
+  s.textContent = text;
+  s.style.color = isError ? '#b23' : '#666';
+}
 
-        const list = document.getElementById("file-list");
-        data.slice(0,10).forEach(file => {
-          const li = document.createElement("li");
+// fallback copy for non-secure contexts
+function copyToClipboard(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(text);
+  } else {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try { document.execCommand('copy'); } catch(e) { console.warn('fallback copy failed', e); }
+    ta.remove();
+    return Promise.resolve();
+  }
+}
 
-          const notice = document.createElement("div");
-          notice.className = "copy-notice";
-          notice.textContent = "Link disalin!";
-          li.appendChild(notice);
+async function fetchAndRender() {
+  const listEl = document.getElementById('file-list');
+  listEl.innerHTML = '';
+  setStatus('Memuat daftar file...');
 
-          const a = document.createElement("a");
-          a.href = `${domain}/${file.name}`;
-          a.textContent = file.name;
-          a.className = "file-link";
+  try {
+    // 1) ambil isi folder (root)
+    const contentsUrl = `https://api.github.com/repos/${encodeURIComponent(username)}/${encodeURIComponent(repo)}/contents/${encodeURIComponent(path)}`;
+    const res = await apiFetch(contentsUrl);
 
-          a.addEventListener("click", function(e) {
-            e.preventDefault();
-            navigator.clipboard.writeText(`${domain}/${file.name}`).then(() => {
-              notice.classList.add("show");
-              setTimeout(() => notice.classList.remove("show"), 1200);
-            });
-          });
-
-          li.appendChild(a);
-          list.appendChild(li);
-        });
-
-      } catch (error) {
-        console.error(error);
-        document.getElementById("file-list").innerHTML = `<li>Terjadi kesalahan saat mengambil data.</li>`;
-      }
+    if (!res.ok) {
+      // ambil pesan error dari body bila ada, tampilkan agar mudah debug
+      let body = null;
+      try { body = await res.json(); } catch(e) { body = null; }
+      const msg = body && body.message ? `${res.status} — ${body.message}` : `HTTP ${res.status}`;
+      setStatus(`Gagal mengambil data: ${msg}`, true);
+      console.error('GitHub API error', res.status, body);
+      return;
     }
 
-    fetchFiles();
-  </script>
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      setStatus('Tidak ada file di path ini.');
+      return;
+    }
+
+    // hanya ambil item yang tipe 'file'
+    const files = data.filter(item => item.type === 'file').map(f => ({ name: f.name, path: f.path }));
+    if (files.length === 0) {
+      setStatus('Tidak ada file di path ini.');
+      return;
+    }
+
+    setStatus('Mengambil tanggal terakhir tiap file (untuk mengurutkan)...');
+
+    // batasi jumlah file yang akan dicek tanggalnya supaya tidak terlalu banyak request
+    const limitCheck = 60; // ambil waktu commit untuk at most 60 file (biasanya root tidak sebesar itu)
+    const limitedFiles = files.slice(0, limitCheck);
+
+    // untuk tiap file ambil commit terbaru untuk path tersebut
+    const promises = limitedFiles.map(async file => {
+      try {
+        const commitsUrl = `https://api.github.com/repos/${encodeURIComponent(username)}/${encodeURIComponent(repo)}/commits?path=${encodeURIComponent(file.path)}&per_page=1`;
+        const rc = await apiFetch(commitsUrl);
+        if (!rc.ok) {
+          console.warn('commit fetch failed for', file.path, rc.status);
+          return { ...file, date: 0 };
+        }
+        const commits = await rc.json();
+        if (Array.isArray(commits) && commits.length > 0 && commits[0].commit && commits[0].commit.author && commits[0].commit.author.date) {
+          return { ...file, date: new Date(commits[0].commit.author.date).getTime() || 0 };
+        } else {
+          return { ...file, date: 0 };
+        }
+      } catch(e) {
+        console.warn('error fetching commit for', file.path, e);
+        return { ...file, date: 0 };
+      }
+    });
+
+    const filesWithDates = await Promise.all(promises);
+
+    // urutkan berdasarkan tanggal (baru -> lama)
+    filesWithDates.sort((a,b) => (b.date || 0) - (a.date || 0));
+
+    // ambil maksimal 10
+    const top = filesWithDates.slice(0, 10);
+
+    // render tombol
+    setStatus('');
+    top.forEach(f => {
+      const li = document.createElement('li');
+
+      const notice = document.createElement('div');
+      notice.className = 'copy-notice';
+      notice.textContent = 'Link disalin!';
+      li.appendChild(notice);
+
+      const btn = document.createElement('button');
+      btn.className = 'file-btn';
+      btn.type = 'button';
+      // buat URL target menggunakan path (encodeURI untuk menjaga slash tetap, tapi encode special chars)
+      const fileUrl = encodeURI(`${domain}/${f.path}`);
+      btn.textContent = f.name;
+
+      btn.addEventListener('click', async () => {
+        try {
+          await copyToClipboard(fileUrl);
+          // visual feedback
+          btn.classList.add('copied');
+          notice.classList.add('show');
+          setTimeout(() => notice.classList.remove('show'), 1200);
+          setTimeout(() => btn.classList.remove('copied'), 1200);
+        } catch (err) {
+          console.error('copy failed', err);
+          setStatus('Gagal menyalin. Lihat console untuk detail.', true);
+        }
+      });
+
+      li.appendChild(btn);
+      listEl.appendChild(li);
+    });
+
+    if (top.length === 0) setStatus('Tidak ada file yang ditemukan untuk ditampilkan.');
+
+  } catch (err) {
+    console.error('Unexpected error', err);
+    setStatus('Terjadi kesalahan jaringan. Buka console browser untuk detail.', true);
+  }
+}
+
+// jalankan
+fetchAndRender();
+</script>
 </body>
 </html>
