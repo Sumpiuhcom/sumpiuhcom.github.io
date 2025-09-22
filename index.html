@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Daftar File Repo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <style>
     body { 
       font-family: Arial, sans-serif; 
@@ -12,6 +11,7 @@
       max-width: 600px;  
       margin: auto;
       line-height: 1.6;
+      background-color: #f9f9f9;
     }
     .top-link {
       text-align: center;
@@ -19,13 +19,14 @@
     }
     .top-link a {
       text-decoration: none;
-      color: #0366d6;
+      color: #ff6600; /* warna oranye untuk top link */
       font-size: 1.1em;
     }
     h1 {
       font-size: 1.8em;
       text-align: center;
       margin-bottom: 30px;
+      color: #333;
     }
     ul { 
       list-style: none; 
@@ -33,17 +34,22 @@
     }
     li { 
       margin: 15px 0; 
-      word-break: break-word;
+      text-align: center;
     }
     a.file-link { 
       text-decoration: none; 
-      color: #0366d6; 
+      color: #fff; 
+      background-color: #ff6600; /* tombol oranye */
       font-size: 1.2em;
       display: inline-block;
-      padding: 10px 0;
+      padding: 12px 20px; 
+      font-weight: bold;
+      border-radius: 8px;
+      transition: background-color 0.3s, transform 0.2s;
     }
     a.file-link:hover {
-      text-decoration: underline;
+      background-color: #e65c00; /* sedikit lebih gelap saat hover */
+      transform: scale(1.03);
     }
   </style>
 </head>
@@ -64,30 +70,44 @@
 
     async function fetchFiles() {
       try {
-        const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${path}`;
-        const response = await fetch(apiUrl);
+        const commitsUrl = `https://api.github.com/repos/${username}/${repo}/commits?path=${path}&per_page=10`;
+        const response = await fetch(commitsUrl);
 
-        if (!response.ok) {
-          throw new Error(`Gagal mengambil data: ${response.status}`);
+        if (!response.ok) throw new Error(`Gagal mengambil data: ${response.status}`);
+
+        const commits = await response.json();
+        const fileSet = new Set();
+        const fileList = [];
+
+        // Ambil file dari commit terbaru ke commit lebih lama
+        for (let commit of commits) {
+          const commitUrl = commit.url;
+          const commitDetailResp = await fetch(commitUrl);
+          const commitDetail = await commitDetailResp.json();
+          commitDetail.files.forEach(f => {
+            if (!fileSet.has(f.filename)) {
+              fileSet.add(f.filename);
+              fileList.push(f.filename);
+            }
+          });
+          if (fileList.length >= 10) break; 
         }
 
-        const data = await response.json();
         const list = document.getElementById("file-list");
-
-        data.forEach(file => {
+        fileList.slice(0,10).forEach(fileName => {
           const li = document.createElement("li");
           const a = document.createElement("a");
-          a.href = `${domain}/${file.name}`;
+          a.href = `${domain}/${fileName}`;
           a.target = "_blank";
-          a.textContent = file.name;
+          a.textContent = fileName;
           a.className = "file-link";
           li.appendChild(a);
           list.appendChild(li);
         });
+
       } catch (error) {
         console.error(error);
-        const list = document.getElementById("file-list");
-        list.innerHTML = `<li>Terjadi kesalahan saat mengambil data.</li>`;
+        document.getElementById("file-list").innerHTML = `<li>Terjadi kesalahan saat mengambil data.</li>`;
       }
     }
 
