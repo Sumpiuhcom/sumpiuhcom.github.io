@@ -8,59 +8,84 @@
     body { 
       font-family: Arial, sans-serif; 
       padding: 20px; 
-      max-width: 600px;  
-      margin: auto;
+      margin: 0;
       line-height: 1.6;
-      background-color: #f9f9f9;
+      background-color: #f2f2f2;
     }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 10px;
+    }
+
     .top-link {
       text-align: center;
       margin-bottom: 20px;
     }
     .top-link a {
       text-decoration: none;
-      color: #ff6600; /* warna oranye untuk top link */
-      font-size: 1.1em;
+      color: #ff6600; 
+      font-size: 1.2em;
+      font-weight: bold;
     }
+
     h1 {
-      font-size: 1.8em;
+      font-size: 2em;
       text-align: center;
       margin-bottom: 30px;
       color: #333;
     }
+
     ul { 
       list-style: none; 
       padding: 0; 
+      margin: 0;
     }
+
     li { 
       margin: 15px 0; 
       text-align: center;
     }
+
     a.file-link { 
       text-decoration: none; 
       color: #fff; 
-      background-color: #ff6600; /* tombol oranye */
-      font-size: 1.2em;
-      display: inline-block;
-      padding: 12px 20px; 
+      background-color: #ff6600; 
+      font-size: 1.3em;
+      display: block; /* full width di mobile */
+      width: 100%;
+      max-width: 500px;
+      margin: auto;
+      padding: 15px 20px; 
       font-weight: bold;
-      border-radius: 8px;
-      transition: background-color 0.3s, transform 0.2s;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+      transition: all 0.3s ease;
     }
+
     a.file-link:hover {
-      background-color: #e65c00; /* sedikit lebih gelap saat hover */
-      transform: scale(1.03);
+      background-color: #e65c00;
+      transform: scale(1.05) rotate(-1deg);
+      box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+    }
+
+    /* Responsive typography untuk smartphone */
+    @media (max-width: 400px) {
+      h1 { font-size: 1.6em; }
+      a.file-link { font-size: 1.1em; padding: 12px 15px; }
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <div class="top-link">
+      <a href="https://sumpiuh.com" target="_blank">sumpiuh.com</a>
+    </div>
 
-  <div class="top-link">
-    <a href="https://sumpiuh.com" target="_blank">sumpiuh.com</a>
+    <h1>Daftar File Repo</h1>
+    <ul id="file-list"></ul>
   </div>
-
-  <h1>Daftar File Repo</h1>
-  <ul id="file-list"></ul>
 
   <script>
     const username = "sumpiuhcom";
@@ -79,7 +104,6 @@
         const fileSet = new Set();
         const fileList = [];
 
-        // Ambil file dari commit terbaru ke commit lebih lama
         for (let commit of commits) {
           const commitUrl = commit.url;
           const commitDetailResp = await fetch(commitUrl);
