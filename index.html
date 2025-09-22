@@ -8,81 +8,84 @@
     body { 
       font-family: Arial, sans-serif; 
       padding: 20px; 
-      margin: 0;
-      line-height: 1.6;
-      background-color: #f2f2f2;
-    }
-
-    .container {
-      max-width: 600px;
+      max-width: 600px;  
       margin: auto;
-      padding: 10px;
+      line-height: 1.6;
+      background-color: #f9f9f9;
     }
-
     .top-link {
       text-align: center;
       margin-bottom: 20px;
     }
     .top-link a {
       text-decoration: none;
-      color: #ff6600; 
-      font-size: 1.2em;
-      font-weight: bold;
+      color: #ff6600;
+      font-size: 1.1em;
     }
-
     h1 {
-      font-size: 2em;
+      font-size: 1.8em;
       text-align: center;
       margin-bottom: 30px;
       color: #333;
     }
-
     ul { 
       list-style: none; 
       padding: 0; 
-      margin: 0;
     }
-
     li { 
       margin: 15px 0; 
       text-align: center;
+      position: relative; /* untuk posisi notifikasi */
     }
-
     a.file-link { 
       text-decoration: none; 
       color: #fff; 
       background-color: #ff6600; 
       font-size: 1.2em;
-      display: block; /* full width tombol */
-      width: 100%;
+      display: inline-block;
+      width: 90%;
       max-width: 500px;
-      margin: auto;
-      padding: 15px 20px; 
+      padding: 15px 0; 
       font-weight: bold;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+      border-radius: 8px;
+      transition: background-color 0.2s, transform 0.1s;
+      user-select: none;
     }
-
-    a.file-link:hover {
+    a.file-link:active {
       background-color: #e65c00;
+      transform: scale(0.98);
     }
-
-    /* Responsive untuk smartphone */
-    @media (max-width: 400px) {
-      h1 { font-size: 1.6em; }
-      a.file-link { font-size: 1.1em; padding: 12px 15px; }
+    .copied {
+      background-color: #4CAF50 !important;
+    }
+    /* notifikasi muncul di atas tombol */
+    .copy-notice {
+      position: absolute;
+      top: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #333;
+      color: #fff;
+      padding: 3px 10px;
+      border-radius: 5px;
+      font-size: 0.9em;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .copy-notice.show {
+      opacity: 1;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="top-link">
-      <a href="https://sumpiuh.com" target="_blank">sumpiuh.com</a>
-    </div>
 
-    <h1>Daftar File Repo</h1>
-    <ul id="file-list"></ul>
+  <div class="top-link">
+    <a href="https://sumpiuh.com" target="_blank">sumpiuh.com</a>
   </div>
+
+  <h1>Daftar File Repo</h1>
+  <ul id="file-list"></ul>
 
   <script>
     const username = "sumpiuhcom";
@@ -111,17 +114,33 @@
               fileList.push(f.filename);
             }
           });
-          if (fileList.length >= 10) break; 
+          if (fileList.length >= 10) break;
         }
 
         const list = document.getElementById("file-list");
         fileList.slice(0,10).forEach(fileName => {
           const li = document.createElement("li");
+
+          // notifikasi
+          const notice = document.createElement("div");
+          notice.className = "copy-notice";
+          notice.textContent = "Link disalin!";
+          li.appendChild(notice);
+
           const a = document.createElement("a");
           a.href = `${domain}/${fileName}`;
-          a.target = "_blank";
           a.textContent = fileName;
           a.className = "file-link";
+
+          a.addEventListener("click", function(e) {
+            e.preventDefault();
+            navigator.clipboard.writeText(`${domain}/${fileName}`).then(() => {
+              // tampilkan notifikasi
+              notice.classList.add("show");
+              setTimeout(() => notice.classList.remove("show"), 1200);
+            });
+          });
+
           li.appendChild(a);
           list.appendChild(li);
         });
